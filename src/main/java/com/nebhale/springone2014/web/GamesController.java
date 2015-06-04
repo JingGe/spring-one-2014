@@ -26,7 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -54,14 +54,19 @@ final class GamesController {
     @RequestMapping(method = RequestMethod.POST, value = "")
     // TODO 2: CREATED Status Code
     @ResponseStatus(HttpStatus.CREATED)
-    HttpHeaders createGame() {
+    Resource<Game> createGame() throws GameDoesNotExistException {
         Game game = this.gameRepository.create();
+        return showGame(game.getId());
+    }
 
-        HttpHeaders headers = new HttpHeaders();
-        // TODO 1: Location: /games/{gameId}
-        headers.setLocation(linkTo(GamesController.class).slash(game.getId()).toUri());
-
-        return headers;
+    @RequestMapping(method = RequestMethod.OPTIONS, value = "")
+    @ResponseStatus(HttpStatus.OK)
+    void createGameOptions(HttpServletResponse theHttpServletResponse) {
+        theHttpServletResponse.addHeader("Access-Control-Allow-Headers", "origin, content-type, accept, x-requested-with");
+        theHttpServletResponse.addHeader("Allow", "-");
+        theHttpServletResponse.addHeader("Access-Control-Max-Age", "60");
+        theHttpServletResponse.addHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        theHttpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
     }
 
     // TODO 1: GET /{gameId}, Content-Type: application/json
